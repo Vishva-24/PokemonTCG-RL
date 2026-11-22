@@ -1,0 +1,30 @@
+DEEP CFR STRATEGY COVERAGE AUDIT
+======================================================================
+Observation hashes and observation-plus-mask hashes are deterministic fingerprints of the 50-D encoder and 70-D legal mask. They are not guaranteed canonical information-set identifiers.
+Reservoir capacity per player: 40000
+
+RED
+  Stream samples: 4310
+  Stream unique observation hashes: 2244
+  Stream unique observation+mask hashes: 2244
+  Final reservoir samples: 4310
+  Final reservoir unique observation hashes: 2244
+  Final reservoir unique observation+mask hashes: 2244
+  Repeated observation+mask keys: 910
+  Repeated keys with target variation: 76
+  Mean / max target variance: 0.00021128 / 0.25000000
+  Inserted samples by depth: {'0': 160, '1': 619, '2': 1519, '3': 2012}
+  Final reservoir samples by depth: {'0': 160, '1': 619, '2': 1519, '3': 2012}
+
+BLUE
+  Stream samples: 884
+  Stream unique observation hashes: 741
+  Stream unique observation+mask hashes: 741
+  Final reservoir samples: 884
+  Final reservoir unique observation hashes: 741
+  Final reservoir unique observation+mask hashes: 741
+  Repeated observation+mask keys: 125
+  Repeated keys with target variation: 2
+  Mean / max target variance: 0.00002057 / 0.06250000
+  Inserted samples by depth: {'1': 31, '2': 208, '3': 645}
+  Final reservoir samples by depth: {'1': 31, '2': 208, '3': 645}

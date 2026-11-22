@@ -1,0 +1,20 @@
+DEEP CFR STRATEGY EVALUATION COVERAGE AUDIT
+======================================================================
+Observation hashes and observation-plus-mask hashes are deterministic fingerprints, not guaranteed canonical information-set identifiers.
+Training coverage index: C:\Users\pujar\Documents\RL\Pokemon TCG\results\deep_cfr_iteration_weighted_depth4_pilot\deep_cfr_strategy_coverage_audit\strategy_coverage_final_reservoir_index.jsonl
+
+GREEDY
+  Evaluation decision occurrences: 6071
+  Reservoir-covered occurrences: 78 (1.28%)
+  Unseen occurrences: 5993 (98.72%)
+  Unique evaluation observation+mask states: 6043
+  Reservoir-covered unique states: 75 (1.24%)
+  Observation-seen/mask-unseen unique states: 0 (0.00%)
+
+SAMPLED
+  Evaluation decision occurrences: 6432
+  Reservoir-covered occurrences: 79 (1.23%)
+  Unseen occurrences: 6353 (98.77%)
+  Unique evaluation observation+mask states: 6405
+  Reservoir-covered unique states: 76 (1.19%)
+  Observation-seen/mask-unseen unique states: 0 (0.00%)

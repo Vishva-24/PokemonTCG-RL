@@ -1,0 +1,49 @@
+{
+  "action_dimension": 70,
+  "checkpoints": {
+    "relative_paths": {
+      "DQN": {
+        "shared": "results/final_model.pt"
+      },
+      "Deep CFR": {
+        "blue": "results/final_deep_cfr_blue_strategy_masked_ce_iteration_weighted.pt",
+        "red": "results/final_deep_cfr_red_strategy_masked_ce_iteration_weighted.pt"
+      },
+      "LSTM-PPO": {
+        "shared": "results/final_lstm_ppo_actor.pt"
+      },
+      "PPO": {
+        "shared": "results/final_ppo_model.pt"
+      }
+    },
+    "sha256": {
+      "DQN:shared": "245ceb5c301e5724d697aec9c3b6568895062c58dc378be66c0494ba22353563",
+      "Deep CFR:blue": "89c06e10bfc33290e0eaac9c056b5468116d13a236540358d2a59ec4493aada4",
+      "Deep CFR:red": "a3a2b7306f98ca1dc6a3137bcc5c678602bd654ccec71a4d1c9459da0afd7886",
+      "LSTM-PPO:shared": "0aa5db39756127f98f9fc4e1b9bd0ab0f53dc42635de66d81177adc5fece00a0",
+      "PPO:shared": "dade79a64df77723461456cbe851711f327ae557794aa0bb28aa18eeb17120ca"
+    }
+  },
+  "created_at_utc": "2026-11-04T03:28:29.398364+00:00",
+  "deep_cfr_seat_assignment": "Red StrategyNetwork plays Red; Blue StrategyNetwork plays Blue in every orientation and self-play condition",
+  "device": "cpu",
+  "expected_games": 40,
+  "game_step_definition": "one GameEngine.step by either player; maximum counts Red and Blue decisions together",
+  "games_per_orientation": 2,
+  "max_decisions": 200,
+  "mode": "all",
+  "observation_dimension": 50,
+  "policy_modes": {
+    "DQN": "greedy masked Q-values, epsilon=0",
+    "Deep CFR": "sample from current legal, normalized StrategyNetwork average-strategy probabilities",
+    "LSTM-PPO": "masked categorical probabilities, deterministic argmax, independent per-seat hidden/cell state",
+    "PPO": "masked categorical probabilities, deterministic argmax"
+  },
+  "schema_version": 1,
+  "seed": 13579,
+  "seed_policy": {
+    "game_deck_seed": "base seed + game index; paired across orientations and matchups",
+    "policy_rng": "stable BLAKE2-derived independent NumPy Generator for each game, orientation, seat, algorithm, and player instance",
+    "python_random": "temporarily seeded only for initialization deck shuffles and restored immediately afterward"
+  }
+}

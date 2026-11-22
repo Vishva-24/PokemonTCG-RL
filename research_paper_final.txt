@@ -1,0 +1,266 @@
+A Comparative Study of Deep Reinforcement Learning and
+Counterfactual Regret Minimization in a Simplified Trading Card Game
+
+Completed research project: a custom Pokémon-inspired TCG environment with a 50-dimensional observation vector and 70-action masked action space
+
+Vishva Pujara, Jaimin Sitapara
+Department of Computer Science (AI-ML)
+Adani University
+Email: vishvapujara.cse23@adaniuni.ac.in, jaiminsitapara.cse23@adaniuni.ac.in
+
+Abstract
+
+This study compares value-based, policy-gradient, recurrent policy-gradient, and regret-minimization methods in a custom, partially observable, two-player Pokémon-inspired card game. The implemented environment uses a 50-dimensional observation vector paired with a separate 70-action legal mask, in a 20-card environment with a two-slot Bench, typed Energy, Retreat, healing, Weakness, knockouts, forced promotion, and deck-out. DQN, PPO, and LSTM-PPO were trained as Red against a legal-random Blue opponent; Deep CFR trained separate Red and Blue networks through external-sampling self-play with a four-step explicit traversal horizon and terminal continuation rollouts. In recorded evaluations, DQN won 72.0% of 100 games; final PPO and LSTM-PPO won 88.3% (1,325/1,500) and 88.9% (1,333/1,500), respectively, against a common 5.7% legal-random baseline evaluated over 1,500 games. Deep CFR’s StrategyNetwork achieved 13.0% greedily and 9.7% by sampling, while the distinct policy obtained by regret-matching the learned Red RegretNetwork achieved 53.6%. These results are descriptive: DQN used fewer games, training protocols were not compute-matched, and no significance or exploitability analysis was recorded. The paper does not claim equilibrium convergence or general algorithm superiority.
+
+Keywords: deep reinforcement learning; trading card games; DQN; PPO; LSTM-PPO; Deep CFR; MCCFR; imperfect-information games
+
+1. Introduction
+
+Sequential games require agents to choose actions over time while rewards depend on both earlier decisions and another player’s behavior. Trading card games make this problem especially concrete: a player chooses among legal actions, observes public board changes and a private hand, and must act without seeing the opponent’s hand or future draws. The resulting decision process combines delayed consequences, variable legal actions, stochastic card order, and imperfect information. These properties make card games a useful setting for comparing general-purpose reinforcement-learning methods with algorithms designed for strategic interaction.
+
+Deep Q-Networks (DQN) combine value estimation with replay and a target network, while policy-gradient methods optimize a stochastic policy directly. PPO stabilizes policy updates with a clipped surrogate objective [1, 2]. A recurrent policy can carry information across successive observations, which may help when the current observation omits relevant history; LSTM is a common gated recurrent mechanism for retaining such context [3]. In contrast, counterfactual regret minimization (CFR) and its sampling variants were developed for extensive-form games with imperfect information [4, 5]. Deep CFR replaces tabular regret and strategy representations with function approximation [6].
+
+This paper reports on the completed research project rather than a controlled algorithm benchmark with fully matched training budgets. Its purpose is to compare the observed behavior of four approaches under the implemented game rules and evaluation procedures, while making protocol differences explicit. Results from an earlier 18-observation/18-action prototype are excluded because its observation and action interfaces differ materially from the implemented environment.
+
+Research questions
+
+RQ1. How did the four implemented algorithms perform against the project’s legal-random opponent under their recorded evaluation protocols?
+RQ2. Did recurrent PPO improve the recorded outcome over feed-forward PPO in this setting?
+RQ3. How did Deep CFR’s learned StrategyNetwork compare with a policy obtained by applying regret matching to the learned RegretNetwork?
+RQ4. Which features of the environment and experimental design limit cross-algorithm conclusions?
+
+Contributions
+
+The paper (i) specifies the implemented observation, action, information-flow, and terminal rules; (ii) describes the four project-specific training pipelines rather than relying on generic algorithm labels; (iii) consolidates the recorded training and evaluation outcomes while separating sample sizes and policy types; and (iv) identifies limitations, including role asymmetry, a shallow explicit CFR horizon, and missing machine-readable evaluation records.
+
+2. Related Work
+
+DQN demonstrated that a convolutional neural network trained with Q-learning, replay, and a target network could learn control policies from high-dimensional visual input [1]. The present project uses the same broad value-based ingredients but a compact vector observation and explicit legal-action mask. PPO alternates data collection with multiple minibatch updates under a clipped policy objective [2]; here, feed-forward PPO and recurrent PPO share the same game wrapper and evaluation ranges but differ in policy representation and sequence training.
+
+Recurrent neural networks provide a stateful representation of temporal context. LSTM was introduced to improve learning over longer time dependencies by controlling information flow through gated memory cells [3]. LSTM-PPO applies that recurrent representation to actor and critic streams. This design can retain recent observation history, but recurrence alone does not ensure that hidden state is sufficient or that the policy uses it effectively.
+
+CFR minimizes counterfactual regret at information sets in extensive-form games; under the assumptions of the theory, self-play regret minimization supports equilibrium computation [4]. MCCFR samples portions of the game tree, including through external sampling, while retaining regret-update guarantees in expectation for the corresponding sampling formulation [5]. Deep CFR uses neural networks and reservoir sampling to approximate regret and average-strategy learning at scale [6]. Fictitious self-play is another sample-based line of work for imperfect-information games [7]. Those theoretical properties apply to the algorithms and assumptions analyzed in the cited work; they do not automatically transfer to this project’s depth-limited, rollout-continued implementation or establish its exploitability.
+
+3. Environment and Game Design
+
+The completed research environment is a custom, simplified Pokémon-inspired simulation implemented in the project’s local game engine, player/deck classes, and Gymnasium-style wrapper; it models a deliberately limited ruleset rather than the full official Pokémon TCG. The 20-card deck contains exactly 20 cards per player: one each of Pikachu (Card ID 948), Charmander (926), Swinub (800), and Applin (149); three each of Grass, Fire, Water, and Lightning Energy; and four Potion items. Card identifiers and printed card metadata were checked against the English card-data file supplied on the Pokémon Company Kaggle competition data page [8]. The local game rules remain a simplified project implementation, not the restricted competition engine. There is no physical Prize-card pile. An overview of the implemented environment and its principal game mechanics is presented in Fig. 1.
+
+[Embedded image: Implemented TCG environment schematic. Schematic of the Red and Blue boards, Active Pokémon, two Bench slots, private deck and hand, discard piles, typed Energy attachment, supported gameplay, observation and action interface, win conditions, and distinct training and evaluation protocols.]
+
+Fig. 1. Schematic representation of the implemented Pokémon-inspired Trading Card Game environment, illustrating the two-player board, Active Pokémon, Bench, deck, hand, Energy attachment, and supported gameplay actions.
+
+Table 1. Implemented Pokémon profiles and attack costs. Applicable Weakness doubles attack damage; no Resistance rule is present.
+
+[Table]
+
+Pokémon | HP and type | Weakness / retreat | Implemented attacks
+
+Pikachu (948) | 70 / Lightning | Fighting / 1 | Tail Smack: 1 Lightning, 10 damage; Tiny Bolt: 1 Lightning + 1 Colorless, 30 damage
+
+Charmander (926) | 80 / Fire | Water / 1 | Fire Claws: 1 Fire + 1 Colorless, 30 damage
+
+Swinub (800) | 70 / Water | Metal / 2 | Stampede: 1 Colorless, 10 damage; Icy Snow: 1 Water + 1 Colorless, 20 damage
+
+Applin (149) | 40 / Grass | Fire / 1 | Spray Fluid: 1 Grass, 20 damage
+
+[/Table]
+
+3.1 Board, turns, and terminal rules
+
+Each player has one Active Pokémon, a Bench of capacity two, a hand, a draw deck, and a discard/trash area. Basic Pokémon can be placed on an empty Bench slot. One Energy may be attached per turn to the Active or an occupied Bench Pokémon. Potion heals up to 30 HP and may target an eligible damaged Pokémon. Retreat pays the Active Pokémon’s retreat cost using any attached Energy and exchanges it with a Bench Pokémon. If both Bench slots are occupied, the unencoded Retreat target is always Bench 1; if only one is occupied, that Pokémon is selected. A Pokémon attack checks its Energy cost and damage; matching the defender’s Weakness doubles damage. Resistance is not implemented.
+
+A player wins upon causing two opposing Active knockouts. After a knockout, an available Bench Pokémon must be promoted; if the defeated player has no Bench, the game ends immediately by bench-out. A player who is required to draw from an empty deck loses immediately. Draws occur during initialization and at turn transitions; The implemented rules include no additional draw effect. Rewards are terminal and zero-sum in the wrapper: Red receives +1 on a Red win and −1 on a Red loss. Evaluation loops impose a maximum of 200 Red-controlled decisions per game; if no Red win is registered by the limit, the evaluator records a non-win/loss.
+
+3.2 Initial state and role asymmetry
+
+Game initialization scans each configured deck in its existing order and removes the first Pokémon encountered for the Active position before shuffling the remaining cards. The configured deck order begins with Pikachu, so both players start with Pikachu Active; this selection is automatic and is not made by the learning agent. The player does not choose a separate opening setup, and both Benches begin empty. The engine then deals three cards to each player and gives Red, the first player, one additional opening card. Red therefore begins with four cards in hand and 15 cards remaining in the deck; Blue begins with three cards and 16 cards remaining. This fixed role and opening-hand asymmetry conditions every reported win rate: Red acts first and receives one extra card. Evaluation seeds control Python’s deck-shuffle and environment randomness.
+
+3.3 Information state and privacy
+
+The network input is a 50-dimensional observation vector built from the observing player’s current view. Deep CFR uses this encoded view as its information-state input, but it is a fixed feature representation and is not claimed to be a complete canonical information-set representation. The legal-action mask is a separate binary vector of length 70, recomputed from the current game state; it is not part of the 50 observation values. Indices 0–17 encode the observing player’s Active and two Bench slots in three six-value blocks: HP, attached Grass/Fire/Water/Lightning Energy counts, and Pokémon type ID. Indices 18–25 encode card-type IDs in that player’s first eight visible hand slots; 26 is that player’s deck size; 27 indicates whether Energy has been attached this turn; 28 indicates whether Retreat was used; and 29 indicates forced promotion for that player. Indices 30–47 encode the opponent’s Active and Bench Pokémon using the same six-value blocks. Indices 48 and 49 give opponent hand size and deck size. Empty board slots use all-zero fields; public Pokémon type IDs are 0 for absent, 1 Grass, 2 Fire, 3 Water, and 4 Lightning. The opponent’s private hand and deck contents are not exposed. The observation builder is symmetric for either player, although the single-agent wrapper exposes Red’s view.
+
+3.4 Legal actions and action masks
+
+The discrete action space has 70 indices. The separate binary legal-action mask is recomputed from the current state and prevents illegal choices, including impossible hand slots and ordinary actions during forced promotion. The fixed mapping is:
+
+[Table]
+
+Indices | Action family
+
+0 | End turn
+
+1–2 | Attack 1 / Attack 2
+
+3 | Retreat
+
+4–11 | Play hand slot 0–7 to Bench 1
+
+12–19 | Play hand slot 0–7 to Bench 2
+
+20–27 | Attach Energy from hand slot 0–7 to Active
+
+28–35 | Attach Energy from hand slot 0–7 to Bench 1
+
+36–43 | Attach Energy from hand slot 0–7 to Bench 2
+
+44–51 | Potion from hand slot 0–7 to Active
+
+52–59 | Potion from hand slot 0–7 to Bench 1
+
+60–67 | Potion from hand slot 0–7 to Bench 2
+
+68–69 | Promote Bench 1 / Bench 2
+
+[/Table]
+
+The single-agent interface controls Red and advances an internal legal-random Blue opponent after Red acts. DQN, PPO, and LSTM-PPO therefore train against that random policy. Deep CFR instead traverses and trains both Red and Blue with separate networks during self-play; Random Blue is used only for post-training benchmark evaluation.
+
+4. Methodology
+
+4.1 DQN
+
+The DQN implementation is a 50–128–128–70 multilayer perceptron with ReLU hidden layers and one Q-value per action. Its replay buffer stores state, action, reward, next state, and terminal status, with a 10,000-transition capacity. Epsilon-greedy selection samples uniformly from legal actions during exploration and chooses the highest-valued legal action otherwise. Training uses a separate target network, synchronized every 10 episodes, Adam at 0.0001, discount factor 0.99, batch size 32, and Smooth L1 (Huber) loss. Its one-step target is yₜ = rₜ + γ(1 − dₜ) maxₐ∈Alegal(sₜ₊₁) Qtarget(sₜ₊₁, a). Epsilon starts at 1.0, decays by 0.99 per episode to a minimum of 0.05. The runner creates a fresh 50/70 network and trains for 1,000 episodes, with a 200-step episode cap. The evaluation loads the best rolling-win-rate checkpoint and acts greedily under the legal mask.
+
+4.2 PPO
+
+PPO uses separate feed-forward actor and critic networks with two 128-unit ReLU hidden layers. The actor outputs 70 logits; a masked categorical distribution assigns zero probability to illegal actions. The critic estimates state value. The clipped surrogate is Lclip = E[min(ρₜAₜ, clip(ρₜ, 1 − ε, 1 + ε)Aₜ)], where ρₜ is the new-to-old legal-action probability ratio. Advantages use generalized advantage estimation: δₜ = rₜ + γ(1 − dₜ)V(sₜ₊₁) − V(sₜ), and Aₜ = δₜ + γλ(1 − dₜ)Aₜ₊₁. Training uses 500 updates of 2,048 Red transitions (1,024,000 total), 10 optimization epochs per update, minibatches of 64, Adam at 0.0001, discount 0.99, GAE lambda 0.95, clipping epsilon 0.2, entropy coefficient 0.01, value coefficient 0.5, and gradient clipping at 0.5. The evaluation policy is greedy over the masked probabilities; the baseline uniformly samples legal actions.
+
+4.3 LSTM-PPO
+
+LSTM-PPO retains separate actor and critic networks, each with a 50-to-128 dense layer, a 128-unit LSTM, and an output head (70 policy logits for the actor and one value for the critic). It carries actor and critic hidden/cell states across decisions and resets them at episode boundaries. Rollouts are divided into sequences of length 16; recurrent minibatches contain four sequences, and training uses 10 PPO epochs. Its remaining settings are 500 updates of 2,048 transitions (1,024,000 total), learning rate 0.00005, discount 0.99, GAE lambda 0.95, clipping epsilon 0.2, entropy coefficient 0.01, value coefficient 0.5, and gradient clipping at 0.5. Action masks are applied in collection, training, and greedy evaluation. This implementation tests whether recurrent memory helps under the same observation interface; it does not add opponent-hand information.
+
+4.4 Deep CFR
+
+For legal action a at a traverser decision represented by observation vector o, regret matching uses σₜ(a|o) = Rₜ⁺(o,a) / Σb∈Alegal(o) Rₜ⁺(o,b), where R⁺ = max(R, 0); it uses a uniform distribution across legal actions when the denominator is zero. Both players are trained by CFR; Random Blue does not participate in training.
+
+Strategy samples contain a 50-dimensional observation vector, a legal probability target generated by regret matching, its separate action mask, and the current iteration number t. The StrategyNetwork is trained with mask-aware cross-entropy weighted by t: L = Σᵢ tᵢ CEᵢ / Σᵢ tᵢ, with logits restricted to legal actions. The target distribution itself remains normalized, while each sample’s per-state cross-entropy is multiplied by its iteration weight. This is an iteration-weighted sample approximation to the average strategy, not a guarantee of an exact reach-weighted behavioral average at every information set; visits are shaped by traversal and reservoir sampling.
+
+The explicit traversal horizon is four steps. At the boundary the implementation continues the sampled current regret-matching profile until a true terminal outcome and uses that outcome as the continuation value. This avoids assigning an artificial leaf payoff, but still makes the estimator depth-limited and approximate: later decisions are represented by a sampled rollout rather than explicit counterfactual expansion and target collection. Consequently, the run should not be described as exact full-depth MCCFR. Evaluation keeps three policy modes distinct: greedy StrategyNetwork, sampled StrategyNetwork, and direct regret matching over the learned Red RegretNetwork. The last is a diagnostic policy, not the learned average StrategyNetwork.
+
+[Embedded image: Embedded figure. See the separate schematic/image file.]
+
+Fig. 2. Implemented environment, agent, training, and evaluation paths. DQN, PPO, and LSTM-PPO train Red against legal-random Blue; Deep CFR traverses both players with separate networks and is evaluated separately against Random Blue.
+
+5. Experimental Setup
+
+All main results concern the custom Pokémon-inspired TCG environment and its 50-dimensional observation vector with a separate 70-action mask. DQN, PPO, and LSTM-PPO were trained as Red against the wrapper’s legal-random Blue policy; Deep CFR used two-player Red/Blue self-play. Training and evaluation seeds were set explicitly by each experiment runner. DQN evaluation used seeds 9999–10098 and 100 games. PPO, LSTM-PPO, and Deep CFR used three 500-game ranges: 10000–10499, 20000–20499, and 30000–30499, for 1,500 games per reported policy. The Random baseline uniformly samples from the current legal-action mask. Trained feed-forward PPO and LSTM-PPO are greedy at evaluation; Deep CFR includes greedy and sampled StrategyNetwork evaluation and a separate regret-matching RegretNetwork diagnostic. Games are capped at 200 Red-controlled decisions. These protocols are not fully matched across algorithms, especially in evaluation size and training objective.
+
+The experiment machine was reported as an Intel Core Ultra 9 275HX system with 32 GB RAM and an NVIDIA GeForce RTX 5060 Laptop GPU. The experiment’s hardware banner reported PyTorch 2.11.0+cu128, CUDA 12.8, and CUDA availability. PPO, LSTM-PPO, and Deep CFR select CUDA when available; the DQN experiment runner also selects the available device for its benchmark run. Hardware/software values are based on the recorded hardware banner and user-supplied machine details; the metric CSVs do not embed a complete reproducibility manifest or package lockfile.
+
+[Table]
+
+Algorithm | Training budget | Principal settings | Reported training time
+
+DQN | 1,000 episodes; 32,079 recorded Red transitions | Replay 10,000; batch 32; gamma .99; epsilon 1.0 → .05 | 342.3 s
+
+PPO | 500 × 2,048 = 1,024,000 steps | 10 epochs; batch 64; lr 1e-4; gamma .99; lambda .95 | 1,956.6 s
+
+LSTM-PPO | 500 × 2,048 = 1,024,000 steps | Sequence 16; 10 epochs; batch 4 sequences; lr 5e-5 | 4,478.3 s
+
+Deep CFR | 100 iterations; 12,800 traversals per player | 128/player/iteration; depth 4; batch 128; reservoir 40,000 | 10,737.6 s
+
+[/Table]
+
+Table 2. Recorded training budgets and settings. DQN transition count is the sum of the saved episode-length metric. Wall-clock values are from recorded run summaries rather than the CSV metric schema. The Deep CFR per-iteration CSV elapsed-time sum is 10,736.2 seconds; the full-run console summary reports 10,737.6 seconds. Deep CFR has 25,600 traversals total across both players.
+
+Evaluation measures and data provenance
+
+Win rate is Red wins divided by games. The averages in Tables 3 and 4 come from the project’s recorded run summaries available for this revision; the repository contains training-curve CSVs and performance plots but no machine-readable per-game evaluation logs. The plots visibly corroborate the reported win rates, while average-reward and average-length values cannot be independently reconstructed from saved CSV files. DQN’s best-checkpoint average reward was not retained and remains NR. DQN nonwins are calculated as games minus wins because its evaluator records wins and reward/length summaries without a separate loss field. Games without a Red win by the 200-decision cap count as nonwins; cap-specific counts were not retained. NR denotes an unavailable metric and is not inferred from win rate.
+
+6. Results
+
+6.1 DQN, PPO, and LSTM-PPO
+
+Table 3. Experimental evaluation against the legal-random Blue policy. DQN uses a 100-game seed protocol; PPO and LSTM-PPO use 1,500 games and the three shared seed ranges. NR means the corresponding evaluation value was not retained in the supplied run summary.
+
+[Table]
+
+Policy | Games | Wins / nonwins | Win rate | Avg. reward | Avg. length
+
+DQN random legal baseline | 100 | 5 / 95 | 5.0% | −0.90 | 33.7
+
+DQN best checkpoint, greedy | 100 | 72 / 28 | 72.0% | NR | 20.6
+
+PPO random legal baseline | 1,500 | 86 / 1,414 | 5.7% | −0.89 | 33.7
+
+PPO best checkpoint | 1,500 | 1,302 / 198 | 86.8% | +0.74 | 17.3
+
+PPO final checkpoint | 1,500 | 1,325 / 175 | 88.3% | +0.77 | 17.1
+
+LSTM-PPO best checkpoint | 1,500 | 1,329 / 171 | 88.6% | +0.77 | 14.6
+
+LSTM-PPO final checkpoint | 1,500 | 1,333 / 167 | 88.9% | +0.78 | 15.1
+
+[/Table]
+
+The recorded final PPO and LSTM-PPO checkpoints exceed their shared legal-random baseline by a large margin. Final PPO reports 88.3% wins, mean reward +0.77, and mean game length 17.1 decisions; final LSTM-PPO reports 88.9%, +0.78, and 15.1 decisions. LSTM-PPO’s final win rate is 0.6 percentage points above PPO’s, with a reported mean game length two decisions shorter. The experiment was not designed as a paired statistical comparison, and no confidence intervals or significance tests were recorded; the difference should therefore be treated descriptively. DQN’s 72% result is based on only 100 games with a different seed protocol, so its estimate is less precise and is not directly comparable to the 1,500-game estimates.
+
+6.2 Deep CFR policy evaluations
+
+Table 4. Deep CFR evaluation on the common 1,500-game seed protocol. The RegretNetwork policy is reported separately from the StrategyNetwork.
+
+[Table]
+
+Red policy | Games | Wins / nonwins | Win rate | Avg. reward | Avg. length
+
+Random legal baseline | 1,500 | 86 / 1,414 | 5.7% | −0.89 | 33.7
+
+StrategyNetwork, greedy | 1,500 | 195 / 1,305 | 13.0% | −0.74 | 29.5
+
+StrategyNetwork, sampled | 1,500 | 145 / 1,355 | 9.7% | −0.81 | 31.1
+
+RegretNetwork + regret matching | 1,500 | 804 / 696 | 53.6% | +0.07 | 26.6
+
+[/Table]
+
+[Embedded image: Embedded figure. See the separate schematic/image file.]
+
+Fig. 3. Recorded Red win rates against legal-random Blue. DQN uses 100 games; every other policy uses 1,500. Sample sizes and training protocols differ, so the bars are descriptive and do not represent a fully matched comparison.
+
+The main interpretive result is the separation between policy representations. The StrategyNetwork, trained to approximate the iteration-weighted average strategy, achieved 13.0% under greedy selection and 9.7% under action sampling. Applying regret matching directly to the learned Red RegretNetwork achieved 53.6% against the same Random Blue protocol. This 53.6% is not the StrategyNetwork’s result and should not be reported as average-strategy performance. The discrepancy is consistent with differences between direct regret matching and a separately trained strategy approximation, but these experiments do not isolate a causal explanation. Potential contributors include function-approximation error, state-distribution mismatch, limited traversal coverage, the greedy-versus-sampled decision rule, and training/evaluation opponent mismatch.
+
+6.3 Exploratory StrategyNetwork coverage diagnostic
+
+A separate, small diagnostic used 10 training iterations, 16 traversals per player per iteration, depth four, iteration-weighted masked cross-entropy, and 200 evaluation games. Exact observation-plus-action-mask hash matching covered 75 of 6,043 unique greedy-evaluation states (1.24%) and 76 of 6,405 unique sampled-evaluation states (1.19%). Coverage after the fourth game decision was effectively zero in that pilot. These values describe only the pilot’s exact-hash match rate; they do not establish coverage for the full 100-iteration checkpoint and do not prove that coverage caused its evaluation results.
+
+7. Discussion
+
+The highest recorded win rates in this project were produced by final PPO and LSTM-PPO against the fixed legal-random opponent. This observation is specific to one custom environment, a fixed Red role, and the recorded protocols; it is not evidence that PPO-family methods dominate regret minimization in imperfect-information games generally. The results show that methods optimized directly against this opponent can perform well under the distribution used for training and evaluation. Deep CFR has a different objective: it performs two-player self-play, and evaluation against Random Blue measures response to one opponent rather than equilibrium quality.
+
+The low Random baseline is also role-conditioned. Red starts first and receives one extra card, yet random legal action selection wins only about 5–6% in the reported game. It is therefore not meaningful to compare this value with a nominal 50% chance rate. Game outcomes are affected by the custom deck composition, setup, draw and deck-out rules, action semantics, and the deterministic role assignment. A role-swapped evaluation would be required to separate first-player advantage from policy strength.
+
+The RegretNetwork/StrategyNetwork gap is particularly useful diagnostically. The average-strategy head is a learned approximation trained from stored strategy targets with iteration-weighted masked cross-entropy; the regret-matching policy transforms the RegretNetwork’s outputs at decision time. They are different functions with different error modes. The StrategyNetwork may fail to reproduce the distribution induced by regret matching away from sampled states, while argmax can further change a stochastic policy. Yet sampled StrategyNetwork performance is also low, so greediness alone is not a sufficient explanation. The small coverage pilot raises a possible generalization concern but cannot be generalized to the full training run.
+
+The CFR implementation’s four-step explicit horizon and terminal continuation reduce the amount of explicit tree expansion, but introduce approximation and rollout variance. Continuation values depend on the current regret-matching profile and sampled future trajectory. Information sets beyond the explicit horizon do not contribute the same explicit regret and strategy target coverage as expanded nodes. Same-turn setup decisions such as playing Pokémon, attaching Energy, and using items can consume substantial depth before attacks or terminal outcomes occur. As a result, horizon four may underrepresent strategically important later decisions. The supplied study did not run controlled horizon comparisons at equal compute, estimate exploitability, or calculate confidence intervals.
+
+8. Limitations and Threats to Validity
+
+First, the environment is a compact custom simulation with a small fixed card pool and simplified rules; results do not transfer directly to the official Pokémon TCG or other games. Second, Red and Blue have fixed roles and unequal initial hand sizes, and the reported win rates are not balanced over seats. Third, training protocols differ: DQN is episode-based and evaluated on 100 games, PPO-family methods are trained for 1.024 million Red decisions and evaluated on 1,500 games, and Deep CFR uses 100 self-play iterations with sampled traversals. Wall-clock times depend on hardware and implementation details and are not controlled for equal compute or sample counts.
+
+Fourth, evaluation uses a single legal-random opponent. DQN, PPO, and LSTM-PPO train against that opponent, whereas Deep CFR trains by self-play; opponent-distribution effects therefore differ. Fifth, no paired confidence intervals, significance testing, opponent suite, role-swap experiment, or exploitability calculation is available. Sixth, aggregate evaluation metrics were retained as recorded run summaries but not as machine-readable per-game files; the paper reports those summaries and leaves unavailable metrics as NR. Finally, Deep CFR is depth-limited with rollout continuation and a neural approximation of its strategy average. The exploratory coverage pilot used only 10 iterations and 200 evaluation games, so its low exact-hash match rate is not evidence about the full run by itself.
+
+9. Future Work
+
+Future work should evaluate the policies against a broader opponent suite and from both player roles, using paired seeds and retained per-game records to support uncertainty estimates. A controlled Deep CFR study should compare explicit traversal horizons and continuation policies under matched compute budgets. Where the game representation supports reliable analysis, exploitability or related strategic-quality measures should complement win rate against a single random opponent. These are proposed experiments; they were not conducted in the present study.
+
+10. Conclusion
+
+This paper presented a source-grounded comparison of DQN, PPO, LSTM-PPO, and Deep CFR in the completed custom Pokémon-inspired TCG environment using a 50-dimensional observation vector and 70-action masked interface. Final PPO and LSTM-PPO achieved the highest recorded win rates against the fixed legal-random opponent, while LSTM-PPO’s 0.6-percentage-point difference from PPO remains descriptive rather than statistically established. Deep CFR showed a large distinction between its learned StrategyNetwork (13.0% greedy; 9.7% sampled) and regret matching over its RegretNetwork (53.6%). The findings motivate controlled work on policy approximation, traversal coverage, rollout depth, role balance, and broader opponent evaluation. They do not establish Nash equilibrium, low exploitability, or general superiority of any algorithm.
+
+References
+
+[1] V. Mnih et al., “Human-level control through deep reinforcement learning,” Nature, vol. 518, no. 7540, pp. 529–533, 2015, doi: 10.1038/nature14236.
+
+[2] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov, “Proximal Policy Optimization Algorithms,” arXiv:1707.06347, 2017, doi: 10.48550/arXiv.1707.06347.
+
+[3] S. Hochreiter and J. Schmidhuber, “Long Short-Term Memory,” Neural Computation, vol. 9, no. 8, pp. 1735–1780, 1997, doi: 10.1162/NECO.1997.9.8.1735.
+
+[4] M. Zinkevich, M. Johanson, M. Bowling, and C. Piccione, “Regret Minimization in Games with Incomplete Information,” in Advances in Neural Information Processing Systems, vol. 20, 2007, pp. 1729–1736. [Online]. Available: https://proceedings.neurips.cc/paper_files/paper/2007/hash/08d98638c6fcd194a4b1e6992063e944-Abstract.html.
+
+[5] M. Lanctot, K. Waugh, M. Zinkevich, and M. Bowling, “Monte Carlo Sampling for Regret Minimization in Extensive Games,” in Advances in Neural Information Processing Systems, vol. 22, 2009, pp. 1078–1086. [Online]. Available: https://proceedings.neurips.cc/paper_files/paper/2009/hash/00411460f7c92d2124a67ea0f4cb5f85-Abstract.html.
+
+[6] N. Brown, A. Lerer, S. Gross, and T. Sandholm, “Deep Counterfactual Regret Minimization,” in Proc. 36th Int. Conf. Machine Learning, PMLR, vol. 97, 2019, pp. 793–802. [Online]. Available: https://proceedings.mlr.press/v97/brown19b.html.
+
+[7] J. Heinrich, M. Lanctot, and D. Silver, “Fictitious Self-Play in Extensive-Form Games,” in Proc. 32nd Int. Conf. Machine Learning, PMLR, vol. 37, 2015, pp. 805–813. [Online]. Available: https://proceedings.mlr.press/v37/heinrich15.html.
+
+[8] The Pokémon Company – PTCGABC Team, “The Pokémon Company – PTCG AI Battle Challenge Strategy,” Kaggle dataset, 2026. [Online]. Available: https://www.kaggle.com/competitions/pokemon-tcg-ai-battle-challenge-strategy/data. Accessed: Nov. 3, 2026. Card-data access and use are subject to the associated competition rules.

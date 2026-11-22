@@ -1,0 +1,61 @@
+FOUR-ALGORITHM HEAD-TO-HEAD AND SELF-PLAY TOURNAMENT
+==========================================================
+Run directory: C:\Users\pujar\Documents\RL\Pokemon TCG\results\head_to_head_tournament\smoke_verified_seed13579
+Games completed: 40 / 40
+Runtime this invocation: 0.77 seconds
+Decision cap: 200 total decisions by both players
+Win-rate CIs use terminal games only; step-cap games remain nonterminal.
+
+ROLE-SEPARATED MATCHUP RESULTS
+----------------------------------------------------------
+Matchup | Orientation | Games | Red W | Blue W | Red win% [95% CI] | Nonterminal | Avg decisions
+DQN vs Deep CFR | DQN_red__Deep CFR_blue | 2 | 1 | 1 | 50.0% [9.5, 90.5] | 0 | 61.0
+DQN vs Deep CFR | Deep CFR_red__DQN_blue | 2 | 0 | 2 | 0.0% [0.0, 65.8] | 0 | 54.0
+DQN vs LSTM-PPO | DQN_red__LSTM-PPO_blue | 2 | 1 | 1 | 50.0% [9.5, 90.5] | 0 | 29.5
+DQN vs LSTM-PPO | LSTM-PPO_red__DQN_blue | 2 | 2 | 0 | 100.0% [34.2, 100.0] | 0 | 34.5
+DQN vs PPO | DQN_red__PPO_blue | 2 | 0 | 2 | 0.0% [0.0, 65.8] | 0 | 46.5
+DQN vs PPO | PPO_red__DQN_blue | 2 | 2 | 0 | 100.0% [34.2, 100.0] | 0 | 40.5
+LSTM-PPO vs Deep CFR | Deep CFR_red__LSTM-PPO_blue | 2 | 0 | 2 | 0.0% [0.0, 65.8] | 0 | 63.5
+LSTM-PPO vs Deep CFR | LSTM-PPO_red__Deep CFR_blue | 2 | 2 | 0 | 100.0% [34.2, 100.0] | 0 | 21.5
+PPO vs Deep CFR | Deep CFR_red__PPO_blue | 2 | 0 | 2 | 0.0% [0.0, 65.8] | 0 | 53.0
+PPO vs Deep CFR | PPO_red__Deep CFR_blue | 2 | 2 | 0 | 100.0% [34.2, 100.0] | 0 | 26.5
+PPO vs LSTM-PPO | LSTM-PPO_red__PPO_blue | 2 | 1 | 1 | 50.0% [9.5, 90.5] | 0 | 42.0
+PPO vs LSTM-PPO | PPO_red__LSTM-PPO_blue | 2 | 1 | 1 | 50.0% [9.5, 90.5] | 0 | 34.0
+DQN vs DQN | instance_1_red__instance_2_blue | 2 | 0 | 2 | 0.0% [0.0, 65.8] | 0 | 58.5
+DQN vs DQN | instance_2_red__instance_1_blue | 2 | 0 | 2 | 0.0% [0.0, 65.8] | 0 | 58.5
+Deep CFR vs Deep CFR | instance_1_red__instance_2_blue | 2 | 0 | 2 | 0.0% [0.0, 65.8] | 0 | 59.0
+Deep CFR vs Deep CFR | instance_2_red__instance_1_blue | 2 | 1 | 1 | 50.0% [9.5, 90.5] | 0 | 40.0
+LSTM-PPO vs LSTM-PPO | instance_1_red__instance_2_blue | 2 | 1 | 1 | 50.0% [9.5, 90.5] | 0 | 32.0
+LSTM-PPO vs LSTM-PPO | instance_2_red__instance_1_blue | 2 | 1 | 1 | 50.0% [9.5, 90.5] | 0 | 32.0
+PPO vs PPO | instance_1_red__instance_2_blue | 2 | 1 | 1 | 50.0% [9.5, 90.5] | 0 | 44.0
+PPO vs PPO | instance_2_red__instance_1_blue | 2 | 1 | 1 | 50.0% [9.5, 90.5] | 0 | 44.0
+
+PAIRWISE WIN-RATE MATRIX (% of completed games; capped games excluded)
+----------------------------------------------------------
+Algorithm | DQN | PPO | LSTM-PPO | Deep CFR
+DQN | — | 0.0 | 25.0 | 75.0
+PPO | 100.0 | — | 50.0 | 100.0
+LSTM-PPO | 75.0 | 50.0 | — | 100.0
+Deep CFR | 25.0 | 0.0 | 0.0 | —
+
+SELF-PLAY ROLE RESULTS
+----------------------------------------------------------
+DQN vs DQN | instance_1_red__instance_2_blue | Red wins 0/2 | Blue wins 2/2 | capped 0 | avg decisions 58.5
+DQN vs DQN | instance_2_red__instance_1_blue | Red wins 0/2 | Blue wins 2/2 | capped 0 | avg decisions 58.5
+Deep CFR vs Deep CFR | instance_1_red__instance_2_blue | Red wins 0/2 | Blue wins 2/2 | capped 0 | avg decisions 59.0
+Deep CFR vs Deep CFR | instance_2_red__instance_1_blue | Red wins 1/2 | Blue wins 1/2 | capped 0 | avg decisions 40.0
+LSTM-PPO vs LSTM-PPO | instance_1_red__instance_2_blue | Red wins 1/2 | Blue wins 1/2 | capped 0 | avg decisions 32.0
+LSTM-PPO vs LSTM-PPO | instance_2_red__instance_1_blue | Red wins 1/2 | Blue wins 1/2 | capped 0 | avg decisions 32.0
+PPO vs PPO | instance_1_red__instance_2_blue | Red wins 1/2 | Blue wins 1/2 | capped 0 | avg decisions 44.0
+PPO vs PPO | instance_2_red__instance_1_blue | Red wins 1/2 | Blue wins 1/2 | capped 0 | avg decisions 44.0
+
+OVERALL CROSS-PLAY RANKING (descriptive; not compute-matched)
+----------------------------------------------------------
+Rank | Algorithm | Wins | Losses | Capped | Completed win% | 95% CI | Score% incl. capped half | Elo
+1 | PPO | 10 | 2 | 0 | 83.3% | [55.2, 95.3] | 83.3% | 1592.0
+2 | LSTM-PPO | 9 | 3 | 0 | 75.0% | [46.8, 91.1] | 75.0% | 1565.1
+3 | DQN | 4 | 8 | 0 | 33.3% | [13.8, 60.9] | 33.3% | 1467.5
+4 | Deep CFR | 1 | 11 | 0 | 8.3% | [1.5, 35.4] | 8.3% | 1375.4
+
+Elo uses K=32, starts at 1500, processes cross-play game records in fixed order, and scores capped games as draws.
+Self-play results describe competition against the same policy family; they do not establish equilibrium or exploitability.

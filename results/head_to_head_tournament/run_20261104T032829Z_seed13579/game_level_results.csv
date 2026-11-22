@@ -1,0 +1,41 @@
+match_type,matchup,orientation,algorithm_red,algorithm_blue,red_instance,blue_instance,seed,decisions,terminal,step_cap_reached,terminal_reason,winner,reason_player,red_reward,blue_reward,red_knockouts,blue_knockouts,illegal_action_attempts
+cross_play,DQN vs PPO,DQN_red__PPO_blue,DQN,PPO,1,2,13579,40,True,False,two_knockout_victory,Blue,,-1.0,1.0,0,2,0
+cross_play,DQN vs PPO,DQN_red__PPO_blue,DQN,PPO,1,2,13580,53,True,False,two_knockout_victory,Blue,,-1.0,1.0,0,2,0
+cross_play,DQN vs PPO,PPO_red__DQN_blue,PPO,DQN,2,1,13579,12,True,False,bench_out,Red,Blue,1.0,-1.0,1,0,0
+cross_play,DQN vs PPO,PPO_red__DQN_blue,PPO,DQN,2,1,13580,69,True,False,two_knockout_victory,Red,,1.0,-1.0,2,0,0
+cross_play,DQN vs LSTM-PPO,DQN_red__LSTM-PPO_blue,DQN,LSTM-PPO,1,2,13579,31,True,False,two_knockout_victory,Blue,,-1.0,1.0,0,2,0
+cross_play,DQN vs LSTM-PPO,DQN_red__LSTM-PPO_blue,DQN,LSTM-PPO,1,2,13580,28,True,False,bench_out,Red,Blue,1.0,-1.0,1,1,0
+cross_play,DQN vs LSTM-PPO,LSTM-PPO_red__DQN_blue,LSTM-PPO,DQN,2,1,13579,15,True,False,bench_out,Red,Blue,1.0,-1.0,1,0,0
+cross_play,DQN vs LSTM-PPO,LSTM-PPO_red__DQN_blue,LSTM-PPO,DQN,2,1,13580,54,True,False,two_knockout_victory,Red,,1.0,-1.0,2,0,0
+cross_play,DQN vs Deep CFR,DQN_red__Deep CFR_blue,DQN,Deep CFR,1,2,13579,67,True,False,deck_out,Blue,Red,-1.0,1.0,1,1,0
+cross_play,DQN vs Deep CFR,DQN_red__Deep CFR_blue,DQN,Deep CFR,1,2,13580,55,True,False,two_knockout_victory,Red,,1.0,-1.0,2,0,0
+cross_play,DQN vs Deep CFR,Deep CFR_red__DQN_blue,Deep CFR,DQN,2,1,13579,52,True,False,two_knockout_victory,Blue,,-1.0,1.0,0,2,0
+cross_play,DQN vs Deep CFR,Deep CFR_red__DQN_blue,Deep CFR,DQN,2,1,13580,56,True,False,two_knockout_victory,Blue,,-1.0,1.0,0,2,0
+cross_play,PPO vs LSTM-PPO,PPO_red__LSTM-PPO_blue,PPO,LSTM-PPO,1,2,13579,14,True,False,bench_out,Red,Blue,1.0,-1.0,1,0,0
+cross_play,PPO vs LSTM-PPO,PPO_red__LSTM-PPO_blue,PPO,LSTM-PPO,1,2,13580,54,True,False,two_knockout_victory,Blue,,-1.0,1.0,0,2,0
+cross_play,PPO vs LSTM-PPO,LSTM-PPO_red__PPO_blue,LSTM-PPO,PPO,2,1,13579,13,True,False,bench_out,Red,Blue,1.0,-1.0,1,0,0
+cross_play,PPO vs LSTM-PPO,LSTM-PPO_red__PPO_blue,LSTM-PPO,PPO,2,1,13580,71,True,False,deck_out,Blue,Red,-1.0,1.0,1,1,0
+cross_play,PPO vs Deep CFR,PPO_red__Deep CFR_blue,PPO,Deep CFR,1,2,13579,9,True,False,bench_out,Red,Blue,1.0,-1.0,1,0,0
+cross_play,PPO vs Deep CFR,PPO_red__Deep CFR_blue,PPO,Deep CFR,1,2,13580,44,True,False,two_knockout_victory,Red,,1.0,-1.0,2,0,0
+cross_play,PPO vs Deep CFR,Deep CFR_red__PPO_blue,Deep CFR,PPO,2,1,13579,58,True,False,two_knockout_victory,Blue,,-1.0,1.0,0,2,0
+cross_play,PPO vs Deep CFR,Deep CFR_red__PPO_blue,Deep CFR,PPO,2,1,13580,48,True,False,two_knockout_victory,Blue,,-1.0,1.0,0,2,0
+cross_play,LSTM-PPO vs Deep CFR,LSTM-PPO_red__Deep CFR_blue,LSTM-PPO,Deep CFR,1,2,13579,12,True,False,bench_out,Red,Blue,1.0,-1.0,1,0,0
+cross_play,LSTM-PPO vs Deep CFR,LSTM-PPO_red__Deep CFR_blue,LSTM-PPO,Deep CFR,1,2,13580,31,True,False,two_knockout_victory,Red,,1.0,-1.0,2,0,0
+cross_play,LSTM-PPO vs Deep CFR,Deep CFR_red__LSTM-PPO_blue,Deep CFR,LSTM-PPO,2,1,13579,69,True,False,deck_out,Blue,Red,-1.0,1.0,1,1,0
+cross_play,LSTM-PPO vs Deep CFR,Deep CFR_red__LSTM-PPO_blue,Deep CFR,LSTM-PPO,2,1,13580,58,True,False,two_knockout_victory,Blue,,-1.0,1.0,0,2,0
+self_play,DQN vs DQN,instance_1_red__instance_2_blue,DQN,DQN,1,2,13579,49,True,False,two_knockout_victory,Blue,,-1.0,1.0,0,2,0
+self_play,DQN vs DQN,instance_1_red__instance_2_blue,DQN,DQN,1,2,13580,68,True,False,deck_out,Blue,Red,-1.0,1.0,1,1,0
+self_play,DQN vs DQN,instance_2_red__instance_1_blue,DQN,DQN,2,1,13579,49,True,False,two_knockout_victory,Blue,,-1.0,1.0,0,2,0
+self_play,DQN vs DQN,instance_2_red__instance_1_blue,DQN,DQN,2,1,13580,68,True,False,deck_out,Blue,Red,-1.0,1.0,1,1,0
+self_play,PPO vs PPO,instance_1_red__instance_2_blue,PPO,PPO,1,2,13579,14,True,False,bench_out,Red,Blue,1.0,-1.0,1,0,0
+self_play,PPO vs PPO,instance_1_red__instance_2_blue,PPO,PPO,1,2,13580,74,True,False,deck_out,Blue,Red,-1.0,1.0,1,1,0
+self_play,PPO vs PPO,instance_2_red__instance_1_blue,PPO,PPO,2,1,13579,14,True,False,bench_out,Red,Blue,1.0,-1.0,1,0,0
+self_play,PPO vs PPO,instance_2_red__instance_1_blue,PPO,PPO,2,1,13580,74,True,False,deck_out,Blue,Red,-1.0,1.0,1,1,0
+self_play,LSTM-PPO vs LSTM-PPO,instance_1_red__instance_2_blue,LSTM-PPO,LSTM-PPO,1,2,13579,16,True,False,bench_out,Red,Blue,1.0,-1.0,1,0,0
+self_play,LSTM-PPO vs LSTM-PPO,instance_1_red__instance_2_blue,LSTM-PPO,LSTM-PPO,1,2,13580,48,True,False,two_knockout_victory,Blue,,-1.0,1.0,0,2,0
+self_play,LSTM-PPO vs LSTM-PPO,instance_2_red__instance_1_blue,LSTM-PPO,LSTM-PPO,2,1,13579,16,True,False,bench_out,Red,Blue,1.0,-1.0,1,0,0
+self_play,LSTM-PPO vs LSTM-PPO,instance_2_red__instance_1_blue,LSTM-PPO,LSTM-PPO,2,1,13580,48,True,False,two_knockout_victory,Blue,,-1.0,1.0,0,2,0
+self_play,Deep CFR vs Deep CFR,instance_1_red__instance_2_blue,Deep CFR,Deep CFR,1,2,13579,61,True,False,deck_out,Blue,Red,-1.0,1.0,1,1,0
+self_play,Deep CFR vs Deep CFR,instance_1_red__instance_2_blue,Deep CFR,Deep CFR,1,2,13580,57,True,False,deck_out,Blue,Red,-1.0,1.0,0,0,0
+self_play,Deep CFR vs Deep CFR,instance_2_red__instance_1_blue,Deep CFR,Deep CFR,2,1,13579,14,True,False,bench_out,Red,Blue,1.0,-1.0,1,0,0
+self_play,Deep CFR vs Deep CFR,instance_2_red__instance_1_blue,Deep CFR,Deep CFR,2,1,13580,66,True,False,deck_out,Blue,Red,-1.0,1.0,0,1,0
